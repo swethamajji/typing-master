@@ -1,0 +1,65 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+   <style>
+    body{
+        background-image: url("https://securityintelligence.com/wp-content/uploads/2023/04/GettyImages-701249404.jpg");
+        background-position: center;
+      background-repeat: no-repeat;
+      background-size: cover;
+      background-attachment: fixed;
+    }
+    .a{
+        height: 100vh;
+        display: flex;
+    align-items: center;
+    justify-content: center;
+
+
+    }
+    .a h1{
+        font-size: 60px;
+    top: 150px;
+    color: white;
+    
+    text-align: center;
+    }
+    .b{
+       height: 50vh;
+       display: flex;
+       flex-direction: column;
+       align-items: center;
+    }
+    button{
+        border-radius: 10px;
+        width: 15vw;
+        height: 6vh;
+        cursor: pointer;
+    }
+    button:hover{
+        background-color: lightgreen;
+    }
+   </style>
+</head>
+<body>
+    <section class="a">
+
+<div class="b">
+    <h1>WELCOME TO TYPING MASTER</h1>
+    <button>START GAME</button>
+    
+</div>
+</section>
+<script>
+    let button=document.querySelector("button");
+    button.addEventListener("click",()=>{
+        location.assign("./typemaster.html")
+    })
+</script>
+
+</body>
+</html>

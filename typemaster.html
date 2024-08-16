@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Type Master</title>
+  <style>
+    /* Reset and global styles */
+    body {
+      font-family: Arial, sans-serif;
+      background-image: linear-gradient(60deg,rgb(28, 6, 71),black,rgb(7, 7, 105));
+      background-position: center;
+      background-repeat: no-repeat;
+      background-size: cover;
+      background-attachment: fixed;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* Navigation bar styles */
+    nav {
+      background-color: #2c3e50;
+      padding: 10px 0;
+      color: white;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+
+    /* Title styles */
+    #title {
+      margin: 0;
+      font-size: 28px;
+    }
+
+    /* Container styles */
+    .container {
+      max-width: 800px;
+      margin: auto;
+      padding: 20px;
+    }
+
+    /* Typing area styles */
+    textarea {
+      width: 100%;
+      padding: 10px;
+      border-radius: 4px;
+      border: 1px solid #ddd;
+      box-shadow: 0 2px 4px whitesmoke;
+      font-size: 16px;
+      resize: none;
+      height: 120px;
+    }
+
+    /* Timer and score area styles */
+    .info {
+      margin-top: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 20px;
+    }
+
+    /* Passage display styles */
+    #passage {
+      background-color: #ffffff;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      font-size: 18px;
+      line-height: 1.6;
+      margin-top: 20px;
+      text-align: center;
+    }
+
+    /* WPM display styles */
+    #wpm {
+      font-size: 24px;
+      margin-top: 10px;
+    }
+
+    /* Score display styles */
+    #score {
+      font-size: 24px;
+      margin-top: 10px;
+    }
+
+    #heading {
+      color: white;
+      display: block;
+      text-align: center;
+    }
+
+    #referenceText {
+      color: #ffffff;
+      text-align: center;
+      margin-top: 100px;
+      font-size: 20px;
+    }
+
+    #typingArea {
+      margin-top: 30px;
+      height: 30vh;
+      font-size: 17px;
+    }
+
+    #timer {
+      color: #ffffff;
+      font-size: 24px;
+      text-align: center;
+      margin-top: 10px;
+    }
+
+    /* Modal styles */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0,0,0,0.4);
+      padding-top: 60px;
+    }
+
+    .modal-content {
+      background-color: #fefefe;
+      margin: 5% auto;
+      padding: 20px;
+      border: 1px solid #888;
+      width: 80%;
+      text-align: center;
+      border-radius: 10px;
+      position: relative;
+    }
+
+    .close {
+      color: #aaa;
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+    }
+
+    .close:hover,
+    .close:focus {
+      color: black;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .modal-success {
+      animation: celebration 2s linear infinite;
+    }
+
+    .modal-failure {
+      color: red;
+      font-size: 24px;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .container {
+        padding: 10px;
+      }
+      #passage {
+        font-size: 16px;
+      }
+      textarea {
+        font-size: 14px;
+      }
+      .info {
+        flex-direction: column;
+        text-align: center;
+      }
+    }
+
+
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1 id="heading">Typing Speed Test</h1>
+  <div class="reference-text" id="referenceText">
+    <!-- The reference text will be injected here by JavaScript -->
+  </div>
+  <textarea id="typingArea" rows="20" cols="70" placeholder="Start typing here..."></textarea>
+  <div id="timer">0</div>
+</div>
+
+<!-- Modal structure -->
+<div id="myModal" class="modal">
+  <div class="modal-content">
+    <span class="close">&times;</span>
+    <p id="modal-message"></p>
+    <div id="wpm"></div>
+    <div id="score"></div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const referenceTexts = [
+      "This is an example sentence to test typing speed.",
+      "Typing quickly and accurately is a valuable skill.",
+      "Practice typing every day to improve your speed and accuracy.",
+      "The quick brown fox jumps over the lazy dog.",
+      "A journey of a thousand miles begins with a single step.",
+      "Success usually comes to those who are too busy to be looking for it.",
+      "Don't watch the clock; do what it does. Keep going.",
+      "The only way to do great work is to love what you do."
+    ];
+  
+    let currentTextIndex;
+    const referenceTextElement = document.getElementById('referenceText');
+    const typingArea = document.getElementById('typingArea');
+    const timerElement = document.getElementById('timer');
+    const modal = document.getElementById('myModal');
+    const modalMessage = document.getElementById('modal-message');
+    const wpmElement = document.getElementById('wpm');
+    const scoreElement = document.getElementById('score');
+    const span = document.getElementsByClassName('close')[0];
+    let startTime;
+    let endTime;
+    let timerInterval;
+  
+    function setNewReferenceText() {
+      currentTextIndex = Math.floor(Math.random() * referenceTexts.length);
+      referenceTextElement.innerText = referenceTexts[currentTextIndex];
+      typingArea.value = '';
+      startTime = null;
+      timerElement.innerText = "0";
+      clearInterval(timerInterval);
+    }
+  
+    function startTimer() {
+      const start = new Date().getTime();
+      timerInterval = setInterval(() => {
+        const now = new Date().getTime();
+        const distance = now - start;
+        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+        timerElement.innerText = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+      },10);
+    }
+  
+    setNewReferenceText();
+  
+    typingArea.addEventListener('keydown', (event) => {
+      if (!startTime) {
+        startTime = new Date();
+        startTimer();
+      }
+  
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        endTime = new Date();
+        clearInterval(timerInterval);
+        const typedText = typingArea.value.trim();
+        calculateWPMAndAccuracy(typedText, referenceTexts[currentTextIndex], startTime, endTime);
+        setNewReferenceText();
+      } else {
+        // Close modal when typing starts again
+        modal.style.display = "none";
+      }
+    });
+  
+    function calculateWPMAndAccuracy(typedText, referenceText, startTime, endTime) {
+      // Function to count the number of words
+      function countWords(text) {
+        return text.trim().split(/\s+/).length;
+      }
+  
+      // Calculate WPM
+      const words = countWords(typedText);
+      const timeDiff = (endTime - startTime) / 60000; // time difference in minutes
+      const wpm = words / timeDiff;
+  
+      // Calculate accuracy
+      const typedWords = typedText.trim().split(/\s+/);
+      const referenceWords = referenceText.trim().split(/\s+/);
+  
+      let correctWords = 0;
+      typedWords.forEach((word, index) => {
+        if (word === referenceWords[index]) {
+          correctWords++;
+        }
+      });
+  
+      const accuracy = (correctWords / referenceWords.length) * 100;
+  
+      // Display results in the modal
+      let message;
+      let messageClass;
+      let wpmColor;
+      let accuracyColor;
+  
+      // Check conditions for WPM
+      if (wpm >= 50) {
+        wpmColor = "green";
+      } else if (wpm >= 40) {
+        wpmColor = "blue";
+      } else if (wpm >= 30) {
+        wpmColor = "orange";
+      } else {
+        wpmColor = "red";
+      }
+  
+      // Check conditions for accuracy
+      if (accuracy >= 80) {
+        accuracyColor = "blue";
+      } else if (accuracy >= 70) {
+        accuracyColor = "orange";
+      } else if (accuracy >= 60) {
+        accuracyColor = "purple";
+      } else {
+        accuracyColor = "black";
+      }
+  
+      // Determine message and message class based on both criteria
+      if (wpmColor === "green" && accuracyColor === "blue") {
+        message = "Excellent! Keep it up!";
+        messageClass = "modal-success";
+      } else if ((wpmColor === "blue" || wpmColor === "orange") && (accuracyColor === "blue" || accuracyColor === "orange")) {
+        message = "Great job! You're doing well.";
+        messageClass = "modal-success";
+      } else if ((wpmColor === "orange" || wpmColor === "red") && (accuracyColor === "orange" || accuracyColor === "black")) {
+        message = "Keep practicing! You'll improve.";
+        messageClass = "modal-failure";
+      } else {
+        message = "Good effort! Keep practicing.";
+        messageClass = "modal-success";
+      }
+  
+      // Display WPM and accuracy in the modal
+      modalMessage.innerHTML = message;
+      modalMessage.className = messageClass;
+      wpmElement.innerHTML = `Words Per Minute (WPM): ${wpm.toFixed(2)}`;
+      wpmElement.style.color = wpmColor;
+      scoreElement.innerHTML = `Accuracy: ${accuracy.toFixed(2)}%`;
+      scoreElement.style.color = accuracyColor;
+      modal.style.display = "block";
+    }
+  
+    // Close the modal when the user clicks on <span> (x)
+    span.onclick = function() {
+      modal.style.display = "none";
+    }
+  
+    // Close the modal when the user clicks anywhere outside of the modal
+    window.onclick = function(event) {
+      if (event.target == modal) {
+        modal.style.display = "none";
+      }
+    }
+  });
+</script>
+  
+</body>
+</html>
